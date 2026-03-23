@@ -1,3 +1,4 @@
 reflected-ffi
 flatted-view
+next-resolver
 fastapi

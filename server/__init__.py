@@ -6,9 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from flatted_view import decode, encode
-
-# from reflected_ffi import local
-from .next_resolver import next_resolver
+from reflected_ffi import local
+from next_resolver import next_resolver
 
 def pyscript_server(directory='.', name='positron'):
     app = FastAPI()

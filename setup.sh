@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ## FROM GITHUB LATEST TAG (or pass a tag explicitly as 3rd argument)
 fetch_github_tag_file "WebReflection/reflected" "reflected.tar.gz"
 
-## LATEST FROM CDN  (if published) ... either ...
+## LATEST FROM CDN  (if published)
 # curl -LO https://cdn.jsdelivr.net/npm/reflected@latest/reflected.tar.gz
 
 tar -xzf reflected.tar.gz
