@@ -54,3 +54,8 @@ mkdir -p public/mpy
 rm -rf public/mpy/reflected_ffi
 mkdir -p public/mpy/reflected_ffi
 cp env/lib/*/site-packages/reflected_ffi/*.py public/mpy/reflected_ffi/
+
+rm -rf public/mpy/flatted_view
+mkdir -p public/mpy/flatted_view
+cp env/lib/*/site-packages/flatted_view/*.py public/mpy/flatted_view/
+
