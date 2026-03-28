@@ -1,4 +1,5 @@
 import asyncio
+import struct
 
 from fastapi import FastAPI
 from fastapi.websockets import WebSocket
@@ -9,57 +10,57 @@ from flatted_view import decode, encode
 from reflected_ffi import local
 from next_resolver import next_resolver
 
-def pyscript_server(directory='.', name='positron'):
-    app = FastAPI()
+def pyscript_server(directory='.', app=FastAPI(), name='positron'):
 
     @app.websocket("/")
     async def websocket_endpoint(websocket: WebSocket):
         await websocket.accept()
 
-        next, resolve, = next_resolver(str)
+        next, resolve, = next_resolver()
 
-        coincident = -1
         nmsp = None
 
         while True:
-            if coincident < 0:
-                coincident = 0
-                try:
-                    data = decode(await websocket.receive_bytes())
-                    coincident = 1
+            buff = await websocket.receive_bytes()
 
-                    async def reflect(*args, **kwargs):
-                        uid, promise, = next()
-                        await websocket.send_bytes(bytes(encode([uid, args])))
-                        return promise
+            if len(buff) < 5: continue
 
-                    nmsp = local(reflect = reflect)
+            print("socket frame:", struct.unpack("<i", buff[0:4])[0], buff[4])
 
-                except Exception as e:
-                    pass
+            # CONNECT
+            if buff[4] == 0:
+                async def reflect(id, trap, args, kwargs):
+                    uid, promise, = next()
+                    body = bytes(encode([id, trap, args, kwargs]))
+                    frame = struct.pack("<i", uid) + bytes([2]) + body
+                    await websocket.send_bytes(frame)
+                    return promise
 
-            elif coincident > 0:
-                try:
-                    buff = await websocket.receive_bytes()
-                    data = decode(buff)
-                    if isinstance(data[0], str):
-                        resolve(*data)
-                    else:
-                        try:
-                            value = nmsp.reflect(*data[1])
-                            while asyncio.iscoroutine(value):
-                                value = await value
+                nmsp = local(reflect = reflect)
 
-                            data[1] = value
+            else:
+                payload = decode(buff[5:]) if len(buff) > 5 else None
 
-                        except Exception as e:
-                            data[1] = None
-                            data[2] = e
+                # WORKER CALLING SERVER -> return [OK, ERROR] response
+                if buff[4] == 1:
+                    data = [None, None]
 
-                        await websocket.send_bytes(bytes(encode(data)))
-                except Exception as e:
-                    # connection closed
-                    break
+                    try:
+                        value = nmsp.reflect(*payload)
+                        while asyncio.iscoroutine(value):
+                            value = await value
+                        data[0] = value
+
+                    except Exception as e:
+                        data[1] = str(e)
+
+                    body = bytes(encode(data))
+                    await websocket.send_bytes(buff[0:5] + body)
+
+                # SERVER CALLING WORKER -> resolve promise
+                elif buff[4] == 2:
+                    resolve(struct.unpack("<i", buff[0:4])[0], payload)
+
 
     app.add_middleware(
         CORSMiddleware,
@@ -68,6 +69,7 @@ def pyscript_server(directory='.', name='positron'):
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
 
     @app.middleware("http")
     async def add_coi_headers(request, call_next):
@@ -85,7 +87,13 @@ def pyscript_server(directory='.', name='positron'):
             'Last-Modified': '0',
             'ETag': '0',
         })
+
         return response
 
     app.mount('/', StaticFiles(directory=directory, html=True), name=name)
     return app
+
+if __name__ == "__main__":
+    import uvicorn
+    app = pyscript_server(directory='public')
+    uvicorn.run(app, host="localhost", port=8000)

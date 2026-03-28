@@ -23,7 +23,8 @@ fetch_github_tag_file() {
     if [ -z "$3" ]; then
         TAG=$(git ls-remote --refs --tags https://github.com/${REPO}.git | tail --lines=1 | cut --delimiter='/' --fields=3)
     else
-        TAG=$3
+        TAG=$3cp env/lib/*/site-packages/reflected_ffi/types.py public/py/reflected_ffi/types.py
+
     fi
     URL="https://github.com/${REPO}/raw/refs/tags/${TAG}/${FILE}"
     echo -e " 🌐 Fetching \x1b[32m${URL}\x1b[0m \u2026"
@@ -48,3 +49,8 @@ mkdir -p public/js
 rm -rf public/js/reflected
 mv reflected public/js/
 mv public/js/reflected/sw.js public/
+
+mkdir -p public/mpy
+rm -rf public/mpy/reflected_ffi
+mkdir -p public/mpy/reflected_ffi
+cp env/lib/*/site-packages/reflected_ffi/*.py public/mpy/reflected_ffi/
