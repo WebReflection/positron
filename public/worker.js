@@ -61,38 +61,41 @@ write('/flatted_view/constants.py', flatted_view_constants);
 write('/flatted_view/decode.py', flatted_view_decode);
 write('/flatted_view/encode.py', flatted_view_encode);
 
-globalThis.positron = view => {
-  debugger;
-  return send(view);
-};
+// TODO: this is ugly but it works now!
+globalThis.positron = [ondata, send];
 
-// TODO: check why the send fails
 interpreter.runPython(`
-from reflected_ffi import local, remote
-from flatted_view import encode, decode
+def __positron__(ondata, send):
+    from reflected_ffi import local, remote
+    from flatted_view import encode, decode
+    import js
+    from jsffi import to_js
+
+    ondata(lambda data: decode(data))
+
+    def test(*args):
+        # print(args)
+        details = encode(args)
+        # TODO: which one is faster?
+        # view = js.Uint8Array.new(details) # View
+        view = to_js(details) # Array!
+        # js.console.log(view)
+        ok, err = decode(send(view))
+        if err: raise Exception(err)
+        return ok
+
+    worker = local(lambda *args: args)
+    server = remote(test)
+    return [server, local, remote, encode, decode]
+
 import js
-
-send = js.positron
-def test(*args):
-  print(args)
-  details = encode(args)
-  view = js.Uint8Array.new(details)
-  return send(view)
-
-js.positron = [test, local, remote, encode, decode]
-# del local
-# del remote
-# del encode
-# del decode
-# del js
+js.positron = __positron__(js.positron[0], js.positron[1])
+del js
+del __positron__
 `);
 
-const [test, local, remote, encode, decode] = globalThis.positron;
+const [server, local, remote, encode, decode] = globalThis.positron;
 delete globalThis.positron;
-
-ondata(data => decode(data));
-
-const server = remote(test);
 
 interpreter.registerJsModule('reflected', {
   window,

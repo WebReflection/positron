@@ -16,4 +16,5 @@ body.addEventListener('click', handler)
 
 print(await Promise.resolve(42))
 
+# THERE WE GO!
 server.builtins.print('hello world')

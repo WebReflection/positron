@@ -25,7 +25,7 @@ def pyscript_server(directory='.', app=FastAPI(), name='positron'):
 
             if len(buff) < 5: continue
 
-            print("socket frame:", struct.unpack("<i", buff[0:4])[0], buff[4])
+            # print("socket frame:", "id", struct.unpack("<i", buff[0:4])[0], "op", buff[4])
 
             # CONNECT
             if buff[4] == 0:
