@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "microdriver"
+version = "0.0.1"
+description = "Bootstraps MicroPython in a PyScript-compatible way from a worker (localhost, Briefcase, Positron, Toga)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "reflected-ffi==0.0.1",
+    "flatted-view==0.0.1",
+    "next-resolver==0.0.2",
+    "websockets",
+    "fastapi",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["microdriver*"]
+
+[tool.setuptools.package-data]
+microdriver = ["public/**/*"]

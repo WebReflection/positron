@@ -11,3 +11,8 @@ env
 *.pyzwzw
 *.pyzwzwzw
 public/js/reflected
+
+# Python packaging (package/microdriver)
+package/dist/
+package/build/
+package/*.egg-info/

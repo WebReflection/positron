@@ -47,15 +47,36 @@ tar -xzf reflected.tar.gz
 rm reflected.tar.gz
 mkdir -p public/js
 rm -rf public/js/reflected
-mv reflected public/js/
-mv public/js/reflected/sw.js public/
+rm -rf public/ffi
+mv reflected/sw.js public/
+mv reflected/ffi public/
+rm -rf public/js
+rm -rf reflected
 
+rm -rf public/mpy
 mkdir -p public/mpy
 rm -rf public/mpy/reflected_ffi
 mkdir -p public/mpy/reflected_ffi
 cp env/lib/*/site-packages/reflected_ffi/*.py public/mpy/reflected_ffi/
+rm -f public/mpy/reflected_ffi/test_*.py
+
+MICRO_PYTHON='https://cdn.jsdelivr.net/npm/@micropython/micropython-webassembly-pyscript@latest'
+curl -LO ${MICRO_PYTHON}/micropython.mjs
+curl -LO ${MICRO_PYTHON}/micropython.wasm
+
+mv micropython.mjs public/mpy
+mv micropython.wasm public/mpy
 
 rm -rf public/mpy/flatted_view
 mkdir -p public/mpy/flatted_view
 cp env/lib/*/site-packages/flatted_view/*.py public/mpy/flatted_view/
+rm -f public/mpy/flatted_view/test_*.py
 
+mkdir -p package
+
+rm -rf package/microdriver/public
+cp -R public package/microdriver/public
+
+# microdriver (PyPI package under package/)
+rm -rf package/microdriver/server
+cp -R server package/microdriver/server
