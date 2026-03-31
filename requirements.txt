@@ -3,3 +3,7 @@ flatted-view==0.0.1
 next-resolver==0.0.2
 websockets
 fastapi
+argparse
+uvicorn
+build
+twine

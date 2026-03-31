@@ -1,5 +1,0 @@
-reflected-ffi==0.0.1
-flatted-view==0.0.1
-next-resolver==0.0.2
-websockets
-fastapi
