@@ -136,6 +136,13 @@ def main():
         help="The port on which to run the server",
     )
     parser.add_argument(
+        "-d",
+        "--directory",
+        dest="directory",
+        action="store",
+        help="The port on which to run the server",
+    )
+    parser.add_argument(
         "port",
         action="store",
         nargs="?",
@@ -145,7 +152,11 @@ def main():
     )
     args = parser.parse_args()
 
-    uvicorn.run(app(), host=args.host, port=args.port)
+    uvicorn.run(
+        app(content=args.directory or SAMPLE),
+        host=args.host,
+        port=args.port,
+    )
 
 
 if __name__ == "__main__":
