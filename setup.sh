@@ -72,11 +72,8 @@ mkdir -p public/mpy/flatted_view
 cp env/lib/*/site-packages/flatted_view/*.py public/mpy/flatted_view/
 rm -f public/mpy/flatted_view/test_*.py
 
-mkdir -p package
-
-rm -rf package/microdriver/public
-cp -R public package/microdriver/public
-
-# microdriver (PyPI package under package/)
-rm -rf package/microdriver/server
-cp -R server package/microdriver/server
+rm -rf package/src/microdriver
+mkdir -p package/src/microdriver
+cp -R public package/src/microdriver/
+cp -R sample package/src/microdriver/
+cp server.py package/src/microdriver/
