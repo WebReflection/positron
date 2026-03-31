@@ -18,3 +18,11 @@ print(await Promise.resolve(42))
 
 # THERE WE GO!
 server.builtins.print('hello world')
+
+# DEMO
+server.builtins.signature(1, 2, three=3)
+
+# JUST SHOWING OFF 😇
+print(server.builtins.type({}))
+print(server.builtins.type([]))
+print(server.builtins.type(True))
