@@ -133,14 +133,14 @@ def main():
         dest="host",
         action="store",
         default="localhost",
-        help="The port on which to run the server",
+        help="The host address of the server (default: localhost).",
     )
     parser.add_argument(
         "-d",
         "--directory",
         dest="directory",
         action="store",
-        help="The port on which to run the server",
+        help="The directory of content to serve.",
     )
     parser.add_argument(
         "port",
@@ -148,7 +148,7 @@ def main():
         nargs="?",
         type=int,
         default=8000,
-        help="The port on which to run the server",
+        help="The port on which to run the server (default: 8000)",
     )
     args = parser.parse_args()
 
