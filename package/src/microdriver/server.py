@@ -11,41 +11,44 @@ from reflected_ffi import local
 from next_resolver import next_resolver
 
 from pathlib import Path
-from os import path
 
-PUBLIC = path.abspath(path.join(Path(__file__).parent, '..', 'public'))
+PUBLIC = Path(__file__).parent / "public"
+SAMPLE = Path(__file__).parent / "sample"
 
-with open(path.join(PUBLIC, 'sw.js'), 'r') as f:
+with (PUBLIC / "sw.js").open("r") as f:
     SW = f.read()
 
-def app(directory=PUBLIC, name='positron'):
-    app=FastAPI()
+
+def app(content=SAMPLE, name="positron"):
+    app = FastAPI()
 
     @app.websocket("/")
     async def websocket_endpoint(websocket: WebSocket):
         await websocket.accept()
 
-        next, resolve, = next_resolver()
+        next, resolve = next_resolver()
 
         nmsp = None
 
         while True:
             buff = await websocket.receive_bytes()
 
-            if len(buff) < 5: continue
+            if len(buff) < 5:
+                continue
 
             # print("socket frame:", "id", struct.unpack("<i", buff[0:4])[0], "op", buff[4])
 
             # CONNECT
             if buff[4] == 0:
+
                 async def reflect(id, trap, args, kwargs):
-                    uid, promise, = next()
+                    uid, promise = next()
                     body = bytes(encode([id, trap, args, kwargs]))
                     frame = struct.pack("<i", uid) + bytes([2]) + body
                     await websocket.send_bytes(frame)
                     return promise
 
-                nmsp = local(reflect = reflect)
+                nmsp = local(reflect=reflect)
 
             else:
                 payload = decode(buff[5:]) if len(buff) > 5 else None
@@ -70,7 +73,6 @@ def app(directory=PUBLIC, name='positron'):
                 elif buff[4] == 2:
                     resolve(struct.unpack("<i", buff[0:4])[0], payload)
 
-
     app.add_middleware(
         CORSMiddleware,
         allow_credentials=True,
@@ -78,7 +80,6 @@ def app(directory=PUBLIC, name='positron'):
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
 
     @app.middleware("http")
     async def add_coi_headers(request, call_next):
@@ -90,29 +91,62 @@ def app(directory=PUBLIC, name='positron'):
 
         #     return Response(content=content, media_type='text/html')
 
-        if request.url.path == '/sw.js':
-            if request.method == 'POST':
+        if request.url.path == "/sw.js":
+            if request.method == "POST":
                 return await request.json()
             else:
-                return Response(content=SW, media_type='text/javascript')
+                return Response(content=SW, media_type="text/javascript")
 
         response = await call_next(request)
-        response.headers.update({
-            'Cross-Origin-Opener-Policy': 'same-origin',
-            'Cross-Origin-Embedder-Policy': 'require-corp',
-            'Cross-Origin-Resource-Policy': 'cross-origin',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'Last-Modified': '0',
-            'ETag': '0',
-        })
+        response.headers.update(
+            {
+                "Cross-Origin-Opener-Policy": "same-origin",
+                "Cross-Origin-Embedder-Policy": "require-corp",
+                "Cross-Origin-Resource-Policy": "cross-origin",
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache",
+                "Expires": "0",
+                "Last-Modified": "0",
+                "ETag": "0",
+            }
+        )
 
         return response
 
-    app.mount('/@microdriver', StaticFiles(directory=directory, html=True), name=name)
+    app.mount("/@microdriver", StaticFiles(directory=PUBLIC, html=True))
+    app.mount("/", StaticFiles(directory=content, html=True), name=name)
     return app
 
-if __name__ == "__main__":
+
+def main():
+    import argparse
     import uvicorn
-    uvicorn.run(app(), host="localhost", port=8000)
+
+    parser = argparse.ArgumentParser(
+        prog="microdriver",
+        description="Serve a micropython app with a server backchannel",
+    )
+
+    parser.add_argument(
+        "-b",
+        "--bind",
+        dest="host",
+        action="store",
+        default="localhost",
+        help="The port on which to run the server",
+    )
+    parser.add_argument(
+        "port",
+        action="store",
+        nargs="?",
+        type=int,
+        default=8000,
+        help="The port on which to run the server",
+    )
+    args = parser.parse_args()
+
+    uvicorn.run(app(), host=args.host, port=args.port)
+
+
+if __name__ == "__main__":
+    main()

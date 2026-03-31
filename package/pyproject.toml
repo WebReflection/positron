@@ -1,11 +1,13 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "microdriver"
 version = "0.0.1"
 description = "Bootstraps MicroPython in a PyScript-compatible way from a worker (localhost, Briefcase, Positron, Toga)."
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -16,12 +18,23 @@ dependencies = [
     "fastapi",
 ]
 
+[project.optional-dependencies]
+server = [
+    "uvicorn",
+]
+
+[project.scripts]
+microdriver = "microdriver.server:main"
+
+[project.urls]
+Tracker = "https://github.com/WebReflection/positron/issues"
+Source = "https://github.com/WebReflection/positron/"
+
 [tool.setuptools]
 include-package-data = true
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["microdriver*"]
-
 [tool.setuptools.package-data]
-microdriver = ["public/**/*"]
+microdriver = [
+    "public/**/*",
+    "sample/**/*",
+]
