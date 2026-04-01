@@ -10,10 +10,9 @@ const bootstrap = reflected({
   },
 });
 
-const base = '/@microdriver/mpy';
-
 const [
   { loadMicroPython },
+  bootstrapMicroPython,
 
   code,
 
@@ -27,7 +26,9 @@ const [
   flatted_view_decode,
   flatted_view_encode,
 ] = await Promise.all([
-  import(`${base}/micropython.mjs`),
+  import('/@microdriver/mpy/micropython.mjs'),
+
+  fetch('/@microdriver/bootstrap.py').then(r => r.arrayBuffer()),
 
   fetch(new URL(import.meta.url).searchParams.get('micropython')).then(
     r => r.ok ? r.text() : (
@@ -47,7 +48,7 @@ const [
   fetch('/@microdriver/mpy/flatted_view/encode.py').then(r => r.arrayBuffer()),
 ]);
 
-const interpreter = await loadMicroPython({ url: `${base}/micropython.wasm` });
+const interpreter = await loadMicroPython({ url: '/@microdriver/mpy/micropython.wasm' });
 
 const { ffi, proxy } = await bootstrap;
 const window = ffi.global;
@@ -56,6 +57,8 @@ delete ffi.global;
 const { FS } = interpreter;
 const options = { canOwn: true };
 const write = (name, buffer) => FS.writeFile(name, new Uint8Array(buffer), options);
+
+write('/bootstrap.py', bootstrapMicroPython);
 
 FS.mkdir('/reflected_ffi');
 write('/reflected_ffi/__init__.py', reflected_ffi_init);
@@ -72,35 +75,7 @@ write('/flatted_view/encode.py', flatted_view_encode);
 // TODO: this is ugly but it works now!
 globalThis.positron = [ondata, send];
 
-interpreter.runPython(`
-def __positron__(ondata, send):
-    from reflected_ffi import local, remote
-    from flatted_view import encode, decode
-    import js
-    from jsffi import to_js
-
-    ondata(lambda data: decode(data))
-
-    def test(*args):
-        # print(args)
-        details = encode(args)
-        # TODO: which one is faster?
-        # view = js.Uint8Array.new(details) # View
-        view = to_js(details) # Array!
-        # js.console.log(view)
-        ok, err = decode(send(view))
-        if err: raise Exception(err)
-        return ok
-
-    worker = local(lambda *args: args)
-    server = remote(test)
-    return [server, local, remote, encode, decode]
-
-import js
-js.positron = __positron__(js.positron[0], js.positron[1])
-del js
-del __positron__
-`);
+interpreter.runPython('import bootstrap;del bootstrap');
 
 const [server, local, remote, encode, decode] = globalThis.positron;
 delete globalThis.positron;
