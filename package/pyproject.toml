@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "microdriver"
-version = "0.0.2"
+version = "0.0.3"
 description = "Bootstraps MicroPython in a PyScript-compatible way from a worker (localhost, Briefcase, Positron, Toga)."
 license = "MIT"
 license-files = ["LICENSE"]

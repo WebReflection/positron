@@ -77,3 +77,4 @@ mkdir -p package/src/microdriver
 cp -R public package/src/microdriver/
 cp -R sample package/src/microdriver/
 cp server.py package/src/microdriver/
+cp __init__.py package/src/microdriver/
