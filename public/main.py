@@ -5,7 +5,9 @@ document = window.document
 
 body = document.body
 
-body.append('Hello World');
+platform = server.__import__('platform')
+
+body.append(platform.platform())
 
 body.onclick = lambda event: print('direct', event.type)
 

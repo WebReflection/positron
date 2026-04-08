@@ -137,6 +137,11 @@ def reflected(reflect=lambda id, trap, args=[], kwargs=None: print("reflect", id
 
                     return False
 
+                if trap == "__import__":
+                    # runtime import to avoid MicroPython failure on __init__.py
+                    from importlib import import_module
+                    return to_value(import_module(args[0]))
+
             except Exception as e:
                 return to_value(e)
 

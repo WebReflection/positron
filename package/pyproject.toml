@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "microdriver"
-version = "0.0.3"
+version = "0.0.4"
 description = "Bootstraps MicroPython in a PyScript-compatible way from a worker (localhost, Briefcase, Positron, Toga)."
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "reflected-ffi==0.0.1",
+    "reflected-ffi==0.0.3",
     "flatted-view==0.0.1",
     "next-resolver==0.0.2",
     "websockets",

@@ -7,19 +7,21 @@ document = window.document
 
 body = document.body
 
-body.append('Hello World')
+platform = server.__import__("platform")
 
-body.onclick = lambda event: print('direct', event.type)
+body.append(f"platform: {platform.platform()}")
+
+body.onclick = lambda event: print("direct", event.type)
 
 async def handler(event):
-    print('handler', event.type)
+    print("handler", event.type)
 
 body.addEventListener('click', handler)
 
 print(await Promise.resolve(42))
 
 # THERE WE GO!
-server.builtins.print('hello world')
+server.builtins.print("hello world")
 
 # # DEMO - REQUIRES demo.py
 # server.builtins.signature(1, 2, three=3)
